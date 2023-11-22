@@ -1,4 +1,5 @@
-describe('Issue create', () => {
+import { faker } from '@faker-js/faker';
+ describe('Issue create', () => {
   beforeEach(() => {
     cy.visit('/');
     cy.url().should('eq', `${Cypress.env('baseUrl')}project/board`).then((url) => {
@@ -55,6 +56,118 @@ describe('Issue create', () => {
     });
   });
 
+
+
+
+
+
+
+  it('Test Case 1: Custom Issue Creation', () => {
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+      
+      cy.get('[data-testid="select:type"]').click();
+      cy.get('[data-testid="select-option:Bug"]')
+          .trigger('click');
+            
+      cy.get('.ql-editor').type('My bug description');
+
+      cy.get('input[name="title"]').type('Bug');
+      
+      cy.get('[data-testid="select:reporterId"]').click();
+      cy.get('[data-testid="select-option:Pickle Rick"]').click();
+
+      cy.get('[data-testid="select:priority"]').click()
+      cy.get('[data-testid="select-option:Highest"]').click()
+
+      cy.get('button[type="submit"]').click();
+    });
+
+    //Assert that modal window is closed and successful message is visible
+    cy.get('[data-testid="modal:issue-create"]').should('not.exist');
+    cy.contains('Issue has been successfully created.').should('be.visible');
+    
+    //Reload the page to be able to see recently created issue
+    //Assert that successful message has dissappeared after the reload
+    cy.reload();
+    cy.contains('Issue has been successfully created.').should('not.exist');
+
+    //Assert than only one list with name Backlog is visible and do steps inside of it
+    cy.get('[data-testid="board-list:backlog').should('be.visible').and('have.length', '1').within(() => {
+      //Assert that this list contains 5 issues and first element with tag p has specified text
+      cy.get('[data-testid="list-issue"]')
+          .should('have.length', '5')
+          .first()
+          .find('p')
+          .contains('Bug');
+      //Assert that correct avatar and type icon are visible
+      cy.get('[data-testid="avatar:Lord Gaben"]').should('be.visible');
+      cy.get('[data-testid="icon:story"]').should('be.visible');
+    });
+  });
+
+
+
+  it.only('Test Case 2: Random Data Plugin Issue Creation', () => {
+    //Create random name 
+    let randomname = faker.random.word()
+    //System finds modal for creating issue and does next steps inside of it
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+    
+      
+      //Type value to description input field
+    
+      cy.get('.ql-editor').type(faker.random.words(10));
+
+      //Type value to title input field
+      //Order of filling in the fields is first description, then title on purpose
+      //Otherwise filling title first sometimes doesn't work due to web page implementation
+      cy.get('input[name="title"]').type(randomname);
+      
+      //Select Lord Gaben from reporter dropdown
+      cy.get('[data-testid="select:reporterId"]').click();
+      cy.get('[data-testid="select-option:Baby Yoda"]').click();
+
+      cy.get('[data-testid="select:priority"]').click()
+      cy.get('[data-testid="select-option:Low"]').click()
+
+
+      //Click on button "Create issue"
+      cy.get('button[type="submit"]').click();
+    });
+
+    //Assert that modal window is closed and successful message is visible
+    cy.get('[data-testid="modal:issue-create"]').should('not.exist');
+    cy.contains('Issue has been successfully created.').should('be.visible');
+    
+    //Reload the page to be able to see recently created issue
+    //Assert that successful message has dissappeared after the reload
+    cy.reload();
+    cy.contains('Issue has been successfully created.').should('not.exist');
+
+    //Assert than only one list with name Backlog is visible and do steps inside of it
+    cy.get('[data-testid="board-list:backlog').should('be.visible').and('have.length', '1').within(() => {
+      //Assert that this list contains 5 issues and first element with tag p has specified text
+      cy.get('[data-testid="list-issue"]')
+          .should('have.length', '5')
+          .first()
+          .find('p')
+          .contains(randomname);
+      //Assert that correct avatar and type icon are visible
+      cy.get('[data-testid="avatar:Lord Gaben"]').should('be.visible');
+      cy.get('[data-testid="icon:story"]').should('be.visible');
+    });
+  });
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   it('Should validate title is required field if missing', () => {
     //System finds modal for creating issue and does next steps inside of it
     cy.get('[data-testid="modal:issue-create"]').within(() => {
